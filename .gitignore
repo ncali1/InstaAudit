@@ -1,0 +1,7 @@
+node_modules
+out
+dist
+site
+*.log
+.DS_Store
+.playwright-mcp
