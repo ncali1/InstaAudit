@@ -17,8 +17,9 @@
   };
 
   const cookie = (name) => {
-    const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
-    return m ? decodeURIComponent(m[1]) : null;
+    const prefix = name + "=";
+    const pair = document.cookie.split("; ").find((c) => c.startsWith(prefix));
+    return pair ? decodeURIComponent(pair.slice(prefix.length)) : null;
   };
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const rand = ([a, b]) => a + Math.random() * (b - a);
