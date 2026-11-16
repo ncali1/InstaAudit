@@ -53,6 +53,9 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: high
+          # The action only checks `runtime` scope by default. Everything here is a
+          # devDependency, so without this the step could never block anything.
+          fail-on-scopes: runtime, development, unknown
 
       # Everything in this project is a devDependency (the site is fully bundled), so the
       # full audit is reported in the job summary rather than gating: build-tool advisories
