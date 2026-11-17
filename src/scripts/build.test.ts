@@ -80,11 +80,24 @@ describe('production build', () => {
     expect(code).toContain('// @match        https://www.instagram.com/*')
     expectSafeScanScript(code)
 
-    // Tampermonkey only gives a script the powers its header asks for. Pin the list, so a
-    // new grant (GM_xmlhttpRequest can reach any host) or a @connect line needs a test change.
-    const grants = [...code.matchAll(/^\/\/ @grant\s+(\S+)/gm)].map(match => match[1])
+    // Tampermonkey only gives a script the powers its header asks for. Pin the header keys
+    // and the grants, so adding one needs a test change: @require and @resource load remote
+    // code, @updateURL and @downloadURL let the script replace itself, and @connect or a
+    // GM_xmlhttpRequest grant lets it reach other hosts.
+    const header = code.slice(0, code.indexOf('// ==/UserScript=='))
+    const keys = [...header.matchAll(/^\/\/ @([\w-]+)/gm)].map(match => match[1])
+    expect([...new Set(keys)].sort()).toEqual([
+      'description',
+      'grant',
+      'match',
+      'name',
+      'namespace',
+      'noframes',
+      'run-at',
+      'version'
+    ])
+    const grants = [...header.matchAll(/^\/\/ @grant\s+(\S+)/gm)].map(match => match[1])
     expect(grants.sort()).toEqual(['GM_getValue', 'GM_registerMenuCommand', 'GM_setValue'])
-    expect(code).not.toMatch(/^\/\/ @connect\b/m)
   })
 
   it('bundles the console script into the app for the Copy button', () => {
