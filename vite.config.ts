@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs'
-import { join, resolve } from 'path'
+import { resolve } from 'path'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
@@ -8,11 +8,14 @@ import react from '@vitejs/plugin-react'
  *  - `virtual:console-script` is the paste-in-console script, as a string, for the Copy button.
  *  - `/instaaudit.user.js` is the Tampermonkey userscript, served in dev and emitted on build. */
 function instaScripts(): Plugin {
-  const dir = resolve('src/scripts')
-  const files = ['scan-core.js', 'console.template.js', 'userscript.template.js']
-  const read = (name: string): string => readFileSync(join(dir, name), 'utf-8')
+  const paths = {
+    core: resolve('src/scripts/scan-core.js'),
+    console: resolve('src/scripts/console.template.js'),
+    userscript: resolve('src/scripts/userscript.template.js')
+  }
+  const read = (path: string): string => readFileSync(path, 'utf-8')
   const assemble = (template: string): string =>
-    read(template).replace('/* @@SCAN_CORE@@ */', () => read('scan-core.js').trimEnd())
+    read(template).replace('/* @@SCAN_CORE@@ */', () => read(paths.core).trimEnd())
 
   const VIRTUAL = 'virtual:console-script'
   const RESOLVED = '\0' + VIRTUAL
@@ -24,20 +27,20 @@ function instaScripts(): Plugin {
     },
     load(id) {
       if (id !== RESOLVED) return undefined
-      for (const name of files) this.addWatchFile(join(dir, name))
-      return `export default ${JSON.stringify(assemble('console.template.js'))}`
+      for (const path of Object.values(paths)) this.addWatchFile(path)
+      return `export default ${JSON.stringify(assemble(paths.console))}`
     },
     configureServer(server) {
       server.middlewares.use('/instaaudit.user.js', (_req, res) => {
         res.setHeader('Content-Type', 'text/javascript; charset=utf-8')
-        res.end(assemble('userscript.template.js'))
+        res.end(assemble(paths.userscript))
       })
     },
     generateBundle() {
       this.emitFile({
         type: 'asset',
         fileName: 'instaaudit.user.js',
-        source: assemble('userscript.template.js')
+        source: assemble(paths.userscript)
       })
     }
   }

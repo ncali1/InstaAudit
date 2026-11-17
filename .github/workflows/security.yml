@@ -1,0 +1,71 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
+
+  semgrep:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - run: semgrep scan --config p/default --config p/typescript --config p/react --error --metrics off
+
+  dependencies:
+    name: Dependency scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      # Blocks on high/critical advisories in anything that ships to users.
+      - name: Audit runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      # Blocks a PR that adds a dependency with a known high/critical advisory.
+      - name: Review dependency changes
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          # The action only checks `runtime` scope by default. Everything here is a
+          # devDependency, so without this the step could never block anything.
+          fail-on-scopes: runtime, development, unknown
+
+      # Everything in this project is a devDependency (the site is fully bundled), so the
+      # full audit is reported in the job summary rather than gating: build-tool advisories
+      # are handled through Dependabot PRs.
+      - name: Report full audit (not gating)
+        if: always()
+        run: |
+          {
+            echo '### npm audit (all dependencies, informational)'
+            echo '```'
+            npm audit || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
