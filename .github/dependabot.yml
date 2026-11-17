@@ -9,7 +9,21 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
+    # Packages that must move together go in one PR. Bumped one at a time they fail to
+    # install: react-dom requires the matching react, and vitest and the React plugin each
+    # require a specific vite major. The first group a package matches wins, so these come
+    # before the catch-all. Security updates need their own groups (`applies-to`).
     groups:
+      react:
+        patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
+      vite-toolchain:
+        patterns: ['vite', 'vitest', '@vitest/*', '@vitejs/*']
+      react-security:
+        applies-to: security-updates
+        patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
+      vite-toolchain-security:
+        applies-to: security-updates
+        patterns: ['vite', 'vitest', '@vitest/*', '@vitejs/*']
       minor-and-patch:
         update-types: [minor, patch]
 
