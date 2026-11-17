@@ -85,7 +85,7 @@ describe('production build', () => {
     // code, @updateURL and @downloadURL let the script replace itself, and @connect or a
     // GM_xmlhttpRequest grant lets it reach other hosts.
     const header = code.slice(0, code.indexOf('// ==/UserScript=='))
-    const keys = [...header.matchAll(/^\/\/ @([\w-]+)/gm)].map(match => match[1])
+    const keys = [...header.matchAll(/^\/\/[ \t]*@([\w-]+)/gm)].map(match => match[1])
     expect([...new Set(keys)].sort()).toEqual([
       'description',
       'grant',
@@ -96,7 +96,7 @@ describe('production build', () => {
       'run-at',
       'version'
     ])
-    const grants = [...header.matchAll(/^\/\/ @grant\s+(\S+)/gm)].map(match => match[1])
+    const grants = [...header.matchAll(/^\/\/[ \t]*@grant\s+(\S+)/gm)].map(match => match[1])
     expect(grants.sort()).toEqual(['GM_getValue', 'GM_registerMenuCommand', 'GM_setValue'])
   })
 
