@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type JSX } from 'react'
 import type { Slot, Snapshot } from '@shared/types'
 import { compareLists } from '@shared/compare'
 import { CloseIcon, UploadIcon } from './icons'

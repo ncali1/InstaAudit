@@ -1,3 +1,5 @@
+import type { JSX } from 'react'
+
 const stroke = {
   fill: 'none',
   stroke: 'currentColor',

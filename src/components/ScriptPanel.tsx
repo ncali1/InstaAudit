@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type JSX } from 'react'
 import script from 'virtual:console-script'
 
 /** How to get a followers list out of Instagram, with the console script one click away. */
