@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type JSX } from 'react'
 import type { Slot, Snapshot } from '@shared/types'
 import { compareLists } from '@shared/compare'
 import { guessFormat } from '@shared/parse'

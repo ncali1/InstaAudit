@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type JSX } from 'react'
 import type { Account, CompareResult, Snapshot } from '@shared/types'
 import { toCsv } from '@shared/csv'
 import { downloadFile } from '../history'
